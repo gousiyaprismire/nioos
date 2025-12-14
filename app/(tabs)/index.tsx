@@ -1,9 +1,18 @@
-import ProfileScreen from "../ProfileScreen";
+// import ProfileScreen from "../ProfileScreen";
+
+// export default function Index() {
+//   return <ProfileScreen />;
+  
+// }
+
+
+
+import CommentsScreen from '../commentsscreens/comments'
 
 export default function Index() {
-  return <ProfileScreen />;
-  
+  return <CommentsScreen />;
 }
+
 
 
 
