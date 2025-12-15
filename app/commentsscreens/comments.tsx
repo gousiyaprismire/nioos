@@ -13,6 +13,11 @@ import {
 import { Ionicons, Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { BlurView } from "expo-blur";
+import { Share } from "react-native";
+import { MaterialIcons } from "@expo/vector-icons";
+import { Audio } from "expo-av";
+
 
 
 /* ---------- MENTION USERS (ADDED) ---------- */
@@ -78,7 +83,17 @@ type Comment = {
   liked: boolean;
   likes: number;
   replies: Reply[];
+  userAction?: "reported" | "muted" | "restricted" | "blocked"; // ⭐ ADD
+  pinned?: boolean; // ⭐ ADD
+  audioUri?: string;  
 };
+React.useEffect(() => {
+  Audio.setAudioModeAsync({
+    playsInSilentModeIOS: true,
+    staysActiveInBackground: false,
+  });
+}, []);
+
 
 /* ---------- ACTION ---------- */
 type ActionProps = {
@@ -125,8 +140,18 @@ export default function CommentsScreen() {
   const [replyTo, setReplyTo] = useState<{
     commentId: number;
     username: string;
-  } | null>(null);
-  const [selectedComment, setSelectedComment] = useState<Comment | null>(null);
+      } | null>(null);
+      const [selectedComment, setSelectedComment] = useState<Comment | null>(null);
+      const [activeFilter, setActiveFilter] = useState<
+      "top" | "newest" | "favourite" | "pinned"
+    >("top");
+  const [recording, setRecording] = useState<Audio.Recording | null>(null);
+  const [isRecording, setIsRecording] = useState(false);
+  const [sound, setSound] = useState<Audio.Sound | null>(null);
+  const [playingId, setPlayingId] = useState<number | null>(null);
+
+
+  
 
   /* ---------- MENTION STATE ---------- */
   const [showMentions, setShowMentions] = useState(false);
@@ -155,7 +180,7 @@ export default function CommentsScreen() {
     },
     {
       id: 2,
-      name: "VINPAUL",
+      name: "Gousiya",
       time: "1w",
       text: "Another comment with same user.",
       liked: false,
@@ -173,7 +198,7 @@ export default function CommentsScreen() {
     },
     {
       id: 3,
-      name: "VINPAUL",
+      name: "Lavanya",
       time: "1w",
       text: "Yet another comment.",
       liked: false,
@@ -327,7 +352,7 @@ export default function CommentsScreen() {
   const filteredMentions = MENTION_USERS.filter(user =>
     user.toLowerCase().startsWith(mentionQuery.toLowerCase())
   );
-  const saveUserAction = async (
+ const saveUserAction = async (
   username: string,
   action: "reported" | "muted" | "restricted" | "blocked"
 ) => {
@@ -336,21 +361,166 @@ export default function CommentsScreen() {
     const stored = await AsyncStorage.getItem(key);
     const data = stored ? JSON.parse(stored) : {};
 
+    const current = data[username]?.[action] ?? false;
+
     data[username] = {
       reported: false,
       muted: false,
       restricted: false,
       blocked: false,
       ...data[username],
-      [action]: true,
+      [action]: !current, // ⭐ TOGGLE
     };
 
     await AsyncStorage.setItem(key, JSON.stringify(data));
-    setSelectedComment(null); // close popup
-  } catch (e) {
-    console.log("Save action error", e);
-  }
-};
+
+    setComments(prev =>
+      prev.map(comment =>
+        comment.name === username
+          ? {
+              ...comment,
+              userAction: !current ? action : undefined,
+            }
+          : comment
+      )
+    );
+
+          setSelectedComment(null);
+        } catch (e) {
+          console.log("Save action error", e);
+        }
+      };
+
+
+        /* ---------- SHARE COMMENT ---------- */
+        const shareComment = async (comment: Comment) => {
+          try {
+            await Share.share({
+              message: `${comment.name}: ${comment.text}`,
+            });
+          } catch (e) {
+            console.log("Share comment error", e);
+          }
+        };
+        /* ---------- PIN COMMENT ---------- */
+          const pinComment = (id: number) => {
+          setComments(prev => {
+            const isAlreadyPinned = prev.find(c => c.id === id)?.pinned;
+
+            const updated = prev.map(c => ({
+              ...c,
+              pinned: isAlreadyPinned ? false : c.id === id,
+            }));
+
+            return updated.sort((a, b) =>
+              a.pinned === b.pinned ? 0 : a.pinned ? -1 : 1
+            );
+          });
+
+          setSelectedComment(null);
+        };
+        const getFilteredComments = () => {
+          let list = [...comments];
+
+          switch (activeFilter) {
+            case "top":
+              return list.sort((a, b) => b.likes - a.likes);
+
+            case "newest":
+              return list.sort((a, b) => b.id - a.id);
+
+            case "favourite":
+              return list.filter(c => c.liked);
+
+            case "pinned":
+              return list.sort((a, b) =>
+                a.pinned === b.pinned ? 0 : a.pinned ? -1 : 1
+              );
+
+            default:
+              return list;
+          }
+        };
+      const startRecording = async () => {
+        try {
+          const permission = await Audio.requestPermissionsAsync();
+          if (!permission.granted) return;
+
+          await Audio.setAudioModeAsync({
+            allowsRecordingIOS: true,
+            playsInSilentModeIOS: true,
+          });
+
+          const { recording } = await Audio.Recording.createAsync(
+            Audio.RecordingOptionsPresets.HIGH_QUALITY
+          );
+
+          setRecording(recording);
+          setIsRecording(true);
+        } catch (err) {
+          console.log("Start recording error", err);
+        }
+      };
+
+      const stopRecording = async () => {
+        try {
+          if (!recording) return;
+
+          await recording.stopAndUnloadAsync();
+          const uri = recording.getURI();
+
+          setRecording(null);
+          setIsRecording(false);
+
+          if (uri) {
+            setComments(prev => [
+              {
+                id: Date.now(),
+                name: "You",
+                time: "now",
+                text: "Voice message",
+                liked: false,
+                likes: 0,
+                replies: [],
+                audioUri: uri, // ✅ IMPORTANT
+              },
+              ...prev,
+            ]);
+          }
+        } catch (err) {
+          console.log("Stop recording error", err);
+        }
+      };
+      const playAudio = async (comment: Comment) => {
+        try {
+          // Stop previous sound
+          if (sound) {
+            await sound.stopAsync();
+            await sound.unloadAsync();
+            setSound(null);
+          }
+
+          if (!comment.audioUri) return;
+
+          const { sound: newSound } = await Audio.Sound.createAsync(
+            { uri: comment.audioUri },
+            { shouldPlay: true }
+          );
+
+          setSound(newSound);
+          setPlayingId(comment.id);
+
+          newSound.setOnPlaybackStatusUpdate(status => {
+            if (!status.isLoaded) return;
+            if (status.didJustFinish) {
+              setPlayingId(null);
+              newSound.unloadAsync();
+            }
+          });
+        } catch (e) {
+          console.log("Play audio error", e);
+        }
+      };
 
 
   return (
@@ -372,15 +542,45 @@ export default function CommentsScreen() {
               />
             </View>
           </View>
-
+        
           {/* POST IMAGE */}
           <Image
             source={{ uri: "https://picsum.photos/500/300" }}
             style={styles.postImage}
           />
 
+          {/* COMMENT FILTER BAR */}
+          <View style={styles.filterBar}>
+            {[
+              { key: "top", label: "Top Comments" },
+              { key: "newest", label: "Newest" },
+              { key: "favourite", label: "Favourite" },
+              { key: "pinned", label: "Pinned" },
+            ].map(item => (
+              <TouchableOpacity
+                key={item.key}
+                style={[
+                  styles.filterChip,
+                  activeFilter === item.key && styles.filterChipActive,
+                ]}
+                onPress={() => setActiveFilter(item.key as any)}
+              >
+                <Text
+                  style={[
+                    styles.filterText,
+                    activeFilter === item.key && styles.filterTextActive,
+                  ]}
+                >
+                  {item.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+
           {/* COMMENTS */}
-          {comments.map(comment => (
+          {getFilteredComments().map(comment => (
+
             <View key={comment.id} style={styles.commentBox}>
               <TouchableOpacity
                 onPress={() =>
@@ -394,11 +594,79 @@ export default function CommentsScreen() {
                 <View style={styles.row}>
                   <GradientAvatar size={30} />
                   <View style={styles.content}>
-                    <Text style={styles.name}>
-                      {comment.name}{" "}
-                      <Text style={styles.time}>{comment.time}</Text>
-                    </Text>
-                    <Text style={styles.text}>{comment.text}</Text>
+                    <View style={{ flexDirection: "row", alignItems: "center" }}>
+                      <Text style={styles.name}>
+                        {comment.name}{" "}
+                        <Text style={styles.time}>{comment.time}</Text>
+                      </Text>
+
+                      {comment.pinned && (
+                      <MaterialIcons
+                        name="push-pin"
+                        size={14}
+                        color="#25D366" // WhatsApp green
+                        style={{ marginLeft: 6, transform: [{ rotate: "20deg" }] }}
+                      />
+                    )}
+
+                      {/* ⭐ ACTION ICON */}
+                      {comment.userAction === "reported" && (
+                        <Ionicons
+                          name="alert-circle"
+                          size={14}
+                          color="#ff4d6d"
+                          style={{ marginLeft: 6 }}
+                        />
+                      )}
+                      {comment.userAction === "muted" && (
+                        <Ionicons
+                          name="volume-mute"
+                          size={14}
+                          color="#999"
+                          style={{ marginLeft: 6 }}
+                        />
+                      )}
+                      {comment.userAction === "restricted" && (
+                        <Ionicons
+                          name="remove-circle"
+                          size={14}
+                          color="#f5a623"
+                          style={{ marginLeft: 6 }}
+                        />
+                      )}
+                      {comment.userAction === "blocked" && (
+                        <Ionicons
+                          name="close-circle"
+                          size={14}
+                          color="#ff4d6d"
+                          style={{ marginLeft: 6 }}
+                        />
+                      )}
+                    </View>
+
+                    {comment.audioUri ? (
+                <TouchableOpacity
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    marginTop: 6,
+                  }}
+                  onPress={() => playAudio(comment)}
+                >
+                  <Ionicons
+                    name={playingId === comment.id ? "pause" : "play"}
+                    size={20}
+                    color="#25D366"
+                    style={{ marginRight: 6 }}
+                  />
+                  <Text style={[styles.text, { color: "#25D366" }]}>
+                    Voice message
+                  </Text>
+                </TouchableOpacity>
+              ) : (
+                <Text style={styles.text}>{comment.text}</Text>
+              )}
+
                   </View>
                 </View>
               </TouchableOpacity>
@@ -425,6 +693,11 @@ export default function CommentsScreen() {
                     })
                   }
                 />
+                <Action
+                    icon={<Feather name="share" size={14} color="#aaa" />}
+                    label="Share"
+                    onPress={() => shareComment(comment)}
+                  />
               </View>
 
               {/* ⭐ VIEW ALL / HIDE REPLIES */}
@@ -489,6 +762,11 @@ export default function CommentsScreen() {
                               })
                             }
                           />
+                          <Action
+                            icon={<Feather name="share" size={14} color="#aaa" />}
+                            label="Share"
+                            onPress={() => shareComment(comment)}
+                          />
                         </View>
                       </View>
                     </View>
@@ -519,33 +797,29 @@ export default function CommentsScreen() {
         )}
         {/* EMOJI PICKER */}
 
-{showEmojis && (
-  <View style={styles.emojiBox}>
-    <ScrollView
-      showsVerticalScrollIndicator={false}
-      contentContainerStyle={{ paddingBottom: 40 }}
-    >
-      <View style={styles.emojiGrid}>
-        {EMOJIES.map(emoji => (
-          <TouchableOpacity
-            key={emoji}
-            style={styles.emojiItem}
-            onPress={() => {
-              setCommentText(prev => prev + emoji);
-            }}
-          >
-            <Text style={styles.emojiText}>{emoji}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-    </ScrollView>
-  </View>
-)}
-
-
-
-
-        {/* BOTTOM BAR */}
+          {showEmojis && (
+            <View style={styles.emojiBox}>
+              <ScrollView
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={{ paddingBottom: 40 }}
+              >
+                <View style={styles.emojiGrid}>
+                  {EMOJIES.map(emoji => (
+                    <TouchableOpacity
+                      key={emoji}
+                      style={styles.emojiItem}
+                      onPress={() => {
+                        setCommentText(prev => prev + emoji);
+                      }}
+                    >
+                      <Text style={styles.emojiText}>{emoji}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </ScrollView>
+            </View>
+          )}
+     {/* BOTTOM BAR */}
         <View style={styles.bottomBarWrapper}>
           {replyTo && (
             <Text style={styles.replyingText}>
@@ -554,14 +828,28 @@ export default function CommentsScreen() {
           )}
 
           <View style={styles.bottomBar}>
-            <LinearGradient
-              colors={["#00E5FF", "#7C4DFF", "#FF2DAA"]}
-              style={styles.micOuter}
-            >
-              <View style={styles.micInner}>
-                <Ionicons name="mic-outline" size={18} color="#fff" />
-              </View>
-            </LinearGradient>
+            <TouchableOpacity
+                onPress={isRecording ? stopRecording : startRecording}
+                activeOpacity={0.8}
+              >
+              <LinearGradient
+                colors={
+                  isRecording
+                    ? ["#ff4d6d", "#ff1e56"]
+                    : ["#00E5FF", "#7C4DFF", "#FF2DAA"]
+                }
+                style={styles.micOuter}
+              >
+                <View style={styles.micInner}>
+                  <Ionicons
+                    name={isRecording ? "stop" : "mic-outline"}
+                    size={18}
+                    color="#fff"
+                  />
+                </View>
+              </LinearGradient>
+            </TouchableOpacity>
+
 
             <View style={styles.inputPill}>
               <TextInput
@@ -599,124 +887,200 @@ export default function CommentsScreen() {
                 </TouchableOpacity>
 
                 <TouchableOpacity onPress={() => setShowAttachSheet(true)}>
-  <Ionicons name="attach-outline" size={18} color="#aaa" />
-</TouchableOpacity>
+                <Ionicons name="attach-outline" size={18} color="#aaa" />
+              </TouchableOpacity>
 
-                <TouchableOpacity onPress={handleSend}>
-                  <Ionicons name="send" size={18} color="#7C4DFF" />
-                </TouchableOpacity>
+                              <TouchableOpacity
+                onPress={handleSend}
+                disabled={isRecording}
+              >
+                <Ionicons
+                  name="send"
+                  size={18}
+                  color={isRecording ? "#444" : "#7C4DFF"}
+                />
+              </TouchableOpacity>
+
               </View>
             </View>
           </View>
         </View>
         {/* ATTACH DOCUMENT SCREEN */}
-{showAttachSheet && (
-  <View style={styles.attachOverlay}>
-    {/* Click outside to close */}
-    <TouchableOpacity
-      style={StyleSheet.absoluteFill}
-      onPress={() => setShowAttachSheet(false)}
-    />
-
-    <View style={styles.attachSheet}>
-      {/* TOP BAR */}
-      <View style={styles.attachHeader}>
-        <LinearGradient
-          colors={["#00E5FF", "#7C4DFF", "#FF2DAA"]}
-          style={styles.attachMicOuter}
-        >
-          <View style={styles.attachMicInner}>
-            <Ionicons name="mic-outline" size={18} color="#fff" />
-          </View>
-        </LinearGradient>
-
-        <Text style={styles.attachPlaceholder}>
-          Write your comment……
-        </Text>
-
-        <View style={styles.attachPostBtn}>
-          <Text style={styles.attachPostText}>Post</Text>
-          <Ionicons name="chevron-forward" size={14} color="#fff" />
-        </View>
-      </View>
-
-      {/* DIVIDER */}
-      <View style={styles.attachDivider} />
-
-      {/* CENTER CONTENT */}
-      <View style={styles.attachCenter}>
-        <View style={styles.attachPlusCircle}>
-          <Ionicons name="add" size={36} color="#555" />
-        </View>
-        <Text style={styles.attachCenterText}>
-          Add your document{"\n"}Here
-        </Text>
-      </View>
-    </View>
-  </View>
-)}
-
-  {selectedComment && (
-          <View style={styles.commentActionOverlay}>
+        {showAttachSheet && (
+          <View style={styles.attachOverlay}>
+            {/* Click outside to close */}
             <TouchableOpacity
               style={StyleSheet.absoluteFill}
-              onPress={() => setSelectedComment(null)}
+              onPress={() => setShowAttachSheet(false)}
             />
 
-            <View style={styles.commentActionCard}>
-              <View style={styles.commentActionHeader}>
-                <GradientAvatar size={28} />
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.actionUsername}>
-                    {selectedComment.name}
-                    <Text style={styles.actionTime}>  {selectedComment.time}</Text>
-                  </Text>
-                  <Text
-                    style={styles.actionTextPreview}
-                    numberOfLines={2}
-                  >
-                    {selectedComment.text}
-                  </Text>
+            <View style={styles.attachSheet}>
+              {/* TOP BAR */}
+              <View style={styles.attachHeader}>
+                <LinearGradient
+                  colors={["#00E5FF", "#7C4DFF", "#FF2DAA"]}
+                  style={styles.attachMicOuter}
+                >
+                  <View style={styles.attachMicInner}>
+                    <Ionicons name="mic-outline" size={18} color="#fff" />
+                  </View>
+                </LinearGradient>
+
+                <Text style={styles.attachPlaceholder}>
+                  Write your comment……
+                </Text>
+                <TouchableOpacity onPress={() => setShowAttachSheet(false)}>
+                    <Ionicons name="close" size={20} color="#aaa" />
+                  </TouchableOpacity>
+
+                <View style={styles.attachPostBtn}>
+                  <Text style={styles.attachPostText}>Post</Text>
+                  <Ionicons name="chevron-forward" size={14} color="#fff" />
                 </View>
               </View>
 
-              <ActionRow
-  icon="alert-circle-outline"
-  label="Report comment"
-  danger
-  onPress={() =>
-    saveUserAction(selectedComment.name, "reported")
-  }
-/>
+              {/* DIVIDER */}
+              <View style={styles.attachDivider} />
 
-<ActionRow
-  icon="volume-mute-outline"
-  label="Mute User"
-  onPress={() =>
-    saveUserAction(selectedComment.name, "muted")
-  }
-/>
-
-<ActionRow
-  icon="remove-circle-outline"
-  label="Restrict account"
-  onPress={() =>
-    saveUserAction(selectedComment.name, "restricted")
-  }
-/>
-
-<ActionRow
-  icon="close-circle-outline"
-  label="Block user"
-  danger
-  onPress={() =>
-    saveUserAction(selectedComment.name, "blocked")
-  }
-/>
-
+              {/* CENTER CONTENT */}
+              <View style={styles.attachCenter}>
+                <View style={styles.attachPlusCircle}>
+                  <Ionicons name="add" size={36} color="#555" />
+                </View>
+                <Text style={styles.attachCenterText}>
+                  Add your document{"\n"}Here
+                </Text>
             </View>
+        </View>
+  </View>
+)}
+
+            {selectedComment && (
+              <View style={styles.commentActionRoot}>
+
+                {/* 🔹 BLUR */}
+                <BlurView
+                  intensity={40}
+                  tint="dark"
+                  style={StyleSheet.absoluteFill}
+                />
+
+                {/* 🔹 OUTSIDE TAP CLOSE */}
+                <TouchableOpacity
+                  style={StyleSheet.absoluteFill}
+                  activeOpacity={1}
+                  onPress={() => setSelectedComment(null)}
+                />
+                <ActionRow
+              icon="close-outline"
+              label="Close"
+              onPress={() => setSelectedComment(null)}
+            />
+
+
+            {/* 🔹 CENTER POPUP */}
+            <View style={styles.commentActionOverlay}>
+              <View style={styles.commentActionCard}>
+                <TouchableOpacity
+          style={styles.popupCloseBtn}
+          onPress={() => setSelectedComment(null)}
+        >
+          <Ionicons name="close" size={20} color="#aaa" />
+        </TouchableOpacity>
+
+        {/* HEADER */}
+        <View style={styles.commentActionHeader}>
+          <GradientAvatar size={28} />
+          <View style={{ flex: 1 }}>
+            <Text style={styles.actionUsername}>
+              {selectedComment.name}
+              <Text style={styles.actionTime}>  {selectedComment.time}</Text>
+            </Text>
+            <Text
+              style={styles.actionTextPreview}
+              numberOfLines={2}
+            >
+              {selectedComment.text}
+            </Text>
           </View>
-        )}
+        </View>
+
+        {/* OPTIONS (UNCHANGED) */}
+
+        <TouchableOpacity
+            style={styles.actionRow}
+            onPress={() => pinComment(selectedComment.id)}
+          >
+            <MaterialIcons
+              name="push-pin"
+              size={18}
+              color="#25D366"
+              style={{ marginRight: 10, transform: [{ rotate: "20deg" }] }}
+            />
+            <Text style={styles.actionRowText}>
+              {selectedComment.pinned ? "Unpin comment" : "Pin comment"}
+            </Text>
+          </TouchableOpacity>
+
+
+        <ActionRow
+            icon="alert-circle-outline"
+            label={
+              selectedComment.userAction === "reported"
+                ? "Undo report"
+                : "Report comment"
+            }
+            danger
+            onPress={() =>
+              saveUserAction(selectedComment.name, "reported")
+            }
+          />
+
+        <ActionRow
+          icon="volume-mute-outline"
+          label={
+            selectedComment.userAction === "muted"
+              ? "Unmute user"
+              : "Mute user"
+          }
+          onPress={() =>
+            saveUserAction(selectedComment.name, "muted")
+          }
+        />
+
+
+        <ActionRow
+            icon="remove-circle-outline"
+            label={
+              selectedComment.userAction === "restricted"
+                ? "Unrestrict account"
+                : "Restrict account"
+            }
+            onPress={() =>
+              saveUserAction(selectedComment.name, "restricted")
+            }
+          />
+
+
+        <ActionRow
+          icon="close-circle-outline"
+          label={
+            selectedComment.userAction === "blocked"
+              ? "Unblock user"
+              : "Block user"
+          }
+          danger
+          onPress={() =>
+            saveUserAction(selectedComment.name, "blocked")
+          }
+        />
+
+      </View>
+    </View>
+
+  </View>
+)}
+
 
       </View>
     </KeyboardAvoidingView>
@@ -725,37 +1089,191 @@ export default function CommentsScreen() {
 
 /* ---------- STYLES ---------- */
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#0b0b0b" },
-  header: { flexDirection: "row", alignItems: "center", paddingTop: 50, paddingHorizontal: 16, paddingBottom: 20, },
-  nameRow: { flexDirection: "row", alignItems: "center" },
-  nameIcon: { width: 14, height: 14, marginLeft: 6 },
-  username: { color: "#fff", fontSize: 15, fontWeight: "600" },
-  postImage: { width: "90%", height: 180, alignSelf: "center", borderRadius: 14 },
-  commentBox: { backgroundColor: "#121212", marginHorizontal: 12, borderRadius: 14, padding: 12, marginTop: 10, marginLeft: 35 },
-  replyBox: { marginTop: 10, marginLeft: 36, backgroundColor: "#0e0e0e", borderRadius: 12, padding: 10 },
-  row: { flexDirection: "row" },
-  content: { flex: 1 },
-  name: { color: "#fff", fontSize: 13, fontWeight: "600" },
-  replyName: { color: "#fff", fontSize: 12, fontWeight: "600" },
-  time: { color: "#777", fontSize: 11 },
-  text: { color: "#ddd", fontSize: 13, marginVertical: 6 },
-  replyText: { color: "#ccc", fontSize: 12, marginVertical: 4 },
-  iconRow: { flexDirection: "row", marginTop: 6 },
-  iconItem: { marginRight: 16 },
-  iconText: { color: "#aaa", fontSize: 12, marginLeft: 4 },
-  viewRepliesBtn: { marginTop: 6, marginLeft: 40 },
-  viewRepliesText: { color: "#7C4DFF", fontSize: 12, fontWeight: "500" },
-  bottomBarWrapper: { paddingHorizontal: 12, paddingBottom: 10 },
-  bottomBar: { flexDirection: "row", alignItems: "center" },
-  micOuter: { width: 36, height: 36, borderRadius: 18, padding: 2, marginRight: 8 },
-  micInner: { flex: 1, borderRadius: 999, backgroundColor: "#0b0b0b", alignItems: "center", justifyContent: "center" },
-  inputPill: { flex: 1, flexDirection: "row", alignItems: "center", backgroundColor: "#121212", borderRadius: 24, paddingHorizontal: 12 },
-  inputText: { flex: 1, color: "#fff" },
-  iconGroup: { flexDirection: "row", alignItems: "center", gap: 12 },
-  replyingText: { color: "#7C4DFF", fontSize: 11, marginLeft: 16 },
-  mentionBox: { backgroundColor: "#121212", borderRadius: 12, marginHorizontal: 12, marginBottom: 6 },
-  mentionItem: { padding: 10 },
-  mentionText: { color: "#7C4DFF", fontSize: 14 },
+  container: {
+     flex: 1, 
+     backgroundColor: "#0b0b0b" 
+    },
+
+  header: { 
+    flexDirection: "row",
+    alignItems: "center", 
+    paddingTop: 50, 
+    paddingHorizontal: 16, 
+    paddingBottom: 20, 
+  },
+
+  nameRow: {
+     flexDirection: "row", 
+     alignItems: "center" 
+    },
+
+  nameIcon: {
+     width: 14, 
+     height: 14, 
+     marginLeft: 6 
+    },
+
+  username: {
+     color: "#fff", 
+     fontSize: 15, 
+     fontWeight: "600" 
+    },
+
+  postImage: {
+     width: "90%", 
+     height: 180, 
+     alignSelf: "center", 
+     borderRadius: 14 
+    },
+
+  commentBox: {
+     backgroundColor: "#121212", 
+     marginHorizontal: 12, 
+     borderRadius: 14,
+    padding: 12, 
+    marginTop: 10, 
+    marginLeft: 35 
+  },
+
+  replyBox: {
+     marginTop: 10, 
+     marginLeft: 36, 
+     backgroundColor: "#0e0e0e", 
+     borderRadius: 12, 
+     padding: 10 
+    },
+
+  row: {
+     flexDirection: "row" 
+    },
+
+  content: { 
+    flex: 1 
+  },
+
+  name: { 
+    color: "#fff",
+    fontSize: 13, 
+    fontWeight: "600" 
+  },
+
+  replyName: {
+     color: "#fff", 
+     fontSize: 12, 
+     fontWeight: "600" 
+    },
+
+  time: {
+     color: "#777", 
+     fontSize: 11 
+    },
+
+  text: {
+     color: "#ddd", 
+     fontSize: 13, 
+     marginVertical: 6 
+    },
+
+  replyText: {
+     color: "#ccc", 
+     fontSize: 12, 
+     marginVertical: 4 
+    },
+
+  iconRow: {
+     flexDirection: "row", 
+     marginTop: 6 , 
+     paddingLeft: 40,
+    },
+
+  iconItem: {
+     marginRight: 16 
+    },
+
+  iconText: {
+     color: "#aaa", 
+     fontSize: 12, 
+     marginLeft: 4 
+    },
+
+  viewRepliesBtn: {
+     marginTop: 6, 
+     marginLeft: 40 
+    },
+
+  viewRepliesText: {
+     color: "#7C4DFF", 
+     fontSize: 12, 
+     fontWeight: "500" 
+    },
+
+  bottomBarWrapper: {
+     paddingHorizontal: 12, 
+     paddingBottom: 10 
+    },
+
+  bottomBar: { 
+    flexDirection: "row", 
+    alignItems: "center" 
+  },
+
+  micOuter: {
+     width: 36, 
+     height: 36, 
+     borderRadius: 18, 
+     padding: 2, 
+     marginRight: 8 
+    },
+
+  micInner: {
+     flex: 1, 
+     borderRadius: 999, 
+     backgroundColor: "#0b0b0b", 
+     alignItems: "center", 
+     justifyContent: "center" 
+    },
+
+  inputPill: { 
+    flex: 1, 
+    flexDirection: "row", 
+    alignItems: "center", 
+    backgroundColor: "#121212", 
+    borderRadius: 24, 
+    paddingHorizontal: 12 
+  },
+
+  inputText: { 
+    flex: 1, 
+    color: "#fff" 
+  },
+
+  iconGroup: { 
+    flexDirection: "row", 
+    alignItems: "center", 
+    gap: 12 
+  },
+
+  replyingText: {
+     color: "#7C4DFF", 
+     fontSize: 11, 
+     marginLeft: 16 
+    },
+
+  mentionBox: {
+     backgroundColor: "#121212", 
+     borderRadius: 12, 
+     marginHorizontal: 12, 
+     marginBottom: 6 
+    },
+
+  mentionItem: { 
+    padding: 10 
+  },
+
+  mentionText: { 
+    color: "#7C4DFF", 
+    fontSize: 14 
+  },
   
   emojiBox: {
   position: "absolute",
@@ -773,12 +1291,55 @@ const styles = StyleSheet.create({
   borderTopWidth: 1,
   borderColor: "#1f1f1f",
 },
+commentActionRoot: {
+  ...StyleSheet.absoluteFillObject,
+  zIndex: 9999,
+  elevation: 9999,
+},
+popupCloseBtn: {
+  position: "absolute",
+  top: 10,
+  right: 10,
+  zIndex: 10,
+},
 
 emojiItem: {
   width: "20%",
   alignItems: "center",
   paddingVertical: 10,
 },
+
+filterBar: {
+  flexDirection: "row",
+  paddingHorizontal: 12,
+  marginTop: 12,
+  marginBottom: 6,
+},
+
+filterChip: {
+  paddingHorizontal: 12,
+  paddingVertical: 6,
+  borderRadius: 16,
+  backgroundColor: "#1a1a1a",
+  marginRight: 8,
+},
+
+filterChipActive: {
+  backgroundColor: "#2b2b2b",
+  borderWidth: 1,
+  borderColor: "#7C4DFF",
+},
+
+filterText: {
+  color: "#aaa",
+  fontSize: 12,
+},
+
+filterTextActive: {
+  color: "#fff",
+  fontWeight: "600",
+},
+
 
 emojiText: {
   fontSize: 22,
