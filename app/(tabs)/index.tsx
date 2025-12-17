@@ -16,6 +16,14 @@ export default function Index() {
 
 
 
+// import NotificationScreen from '../notificationscreens/notification';
+
+// export default function Index() {
+//   return <NotificationScreen />;
+// }
+
+
+
 
 
 // import SearchScreen from '../search-screens/SearchScreen';

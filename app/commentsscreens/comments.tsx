@@ -797,28 +797,28 @@ export default function CommentsScreen() {
         )}
         {/* EMOJI PICKER */}
 
-          {showEmojis && (
-            <View style={styles.emojiBox}>
-              <ScrollView
-                showsVerticalScrollIndicator={false}
-                contentContainerStyle={{ paddingBottom: 40 }}
-              >
-                <View style={styles.emojiGrid}>
-                  {EMOJIES.map(emoji => (
-                    <TouchableOpacity
-                      key={emoji}
-                      style={styles.emojiItem}
-                      onPress={() => {
-                        setCommentText(prev => prev + emoji);
-                      }}
-                    >
-                      <Text style={styles.emojiText}>{emoji}</Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              </ScrollView>
-            </View>
-          )}
+{showEmojis && (
+  <View style={styles.emojiBox}>
+    <ScrollView
+      showsVerticalScrollIndicator={false}
+      contentContainerStyle={{ paddingBottom: 40 }}
+    >
+      <View style={styles.emojiGrid}>
+        {EMOJIES.map(emoji => (
+          <TouchableOpacity
+            key={emoji}
+            style={styles.emojiItem}
+            onPress={() => {
+              setCommentText(prev => prev + emoji);
+            }}
+          >
+            <Text style={styles.emojiText}>{emoji}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+    </ScrollView>
+  </View>
+)}
      {/* BOTTOM BAR */}
         <View style={styles.bottomBarWrapper}>
           {replyTo && (
@@ -829,26 +829,26 @@ export default function CommentsScreen() {
 
           <View style={styles.bottomBar}>
             <TouchableOpacity
-                onPress={isRecording ? stopRecording : startRecording}
-                activeOpacity={0.8}
-              >
-              <LinearGradient
-                colors={
-                  isRecording
-                    ? ["#ff4d6d", "#ff1e56"]
-                    : ["#00E5FF", "#7C4DFF", "#FF2DAA"]
-                }
-                style={styles.micOuter}
-              >
-                <View style={styles.micInner}>
-                  <Ionicons
-                    name={isRecording ? "stop" : "mic-outline"}
-                    size={18}
-                    color="#fff"
-                  />
-                </View>
-              </LinearGradient>
-            </TouchableOpacity>
+  onPress={isRecording ? stopRecording : startRecording}
+  activeOpacity={0.8}
+>
+  <LinearGradient
+    colors={
+      isRecording
+        ? ["#ff4d6d", "#ff1e56"]
+        : ["#00E5FF", "#7C4DFF", "#FF2DAA"]
+    }
+    style={styles.micOuter}
+  >
+    <View style={styles.micInner}>
+      <Ionicons
+        name={isRecording ? "stop" : "mic-outline"}
+        size={18}
+        color="#fff"
+      />
+    </View>
+  </LinearGradient>
+</TouchableOpacity>
 
 
             <View style={styles.inputPill}>
@@ -887,106 +887,106 @@ export default function CommentsScreen() {
                 </TouchableOpacity>
 
                 <TouchableOpacity onPress={() => setShowAttachSheet(true)}>
-                <Ionicons name="attach-outline" size={18} color="#aaa" />
-              </TouchableOpacity>
+  <Ionicons name="attach-outline" size={18} color="#aaa" />
+</TouchableOpacity>
 
-                              <TouchableOpacity
-                onPress={handleSend}
-                disabled={isRecording}
-              >
-                <Ionicons
-                  name="send"
-                  size={18}
-                  color={isRecording ? "#444" : "#7C4DFF"}
-                />
-              </TouchableOpacity>
+                <TouchableOpacity
+  onPress={handleSend}
+  disabled={isRecording}
+>
+  <Ionicons
+    name="send"
+    size={18}
+    color={isRecording ? "#444" : "#7C4DFF"}
+  />
+</TouchableOpacity>
 
               </View>
             </View>
           </View>
         </View>
         {/* ATTACH DOCUMENT SCREEN */}
-        {showAttachSheet && (
-          <View style={styles.attachOverlay}>
-            {/* Click outside to close */}
-            <TouchableOpacity
-              style={StyleSheet.absoluteFill}
-              onPress={() => setShowAttachSheet(false)}
-            />
+{showAttachSheet && (
+  <View style={styles.attachOverlay}>
+    {/* Click outside to close */}
+    <TouchableOpacity
+      style={StyleSheet.absoluteFill}
+      onPress={() => setShowAttachSheet(false)}
+    />
 
-            <View style={styles.attachSheet}>
-              {/* TOP BAR */}
-              <View style={styles.attachHeader}>
-                <LinearGradient
-                  colors={["#00E5FF", "#7C4DFF", "#FF2DAA"]}
-                  style={styles.attachMicOuter}
-                >
-                  <View style={styles.attachMicInner}>
-                    <Ionicons name="mic-outline" size={18} color="#fff" />
-                  </View>
-                </LinearGradient>
+    <View style={styles.attachSheet}>
+      {/* TOP BAR */}
+      <View style={styles.attachHeader}>
+        <LinearGradient
+          colors={["#00E5FF", "#7C4DFF", "#FF2DAA"]}
+          style={styles.attachMicOuter}
+        >
+          <View style={styles.attachMicInner}>
+            <Ionicons name="mic-outline" size={18} color="#fff" />
+          </View>
+        </LinearGradient>
 
-                <Text style={styles.attachPlaceholder}>
-                  Write your comment……
-                </Text>
-                <TouchableOpacity onPress={() => setShowAttachSheet(false)}>
-                    <Ionicons name="close" size={20} color="#aaa" />
-                  </TouchableOpacity>
+        <Text style={styles.attachPlaceholder}>
+          Write your comment……
+        </Text>
+        <TouchableOpacity onPress={() => setShowAttachSheet(false)}>
+            <Ionicons name="close" size={20} color="#aaa" />
+          </TouchableOpacity>
 
-                <View style={styles.attachPostBtn}>
-                  <Text style={styles.attachPostText}>Post</Text>
-                  <Ionicons name="chevron-forward" size={14} color="#fff" />
-                </View>
-              </View>
-
-              {/* DIVIDER */}
-              <View style={styles.attachDivider} />
-
-              {/* CENTER CONTENT */}
-              <View style={styles.attachCenter}>
-                <View style={styles.attachPlusCircle}>
-                  <Ionicons name="add" size={36} color="#555" />
-                </View>
-                <Text style={styles.attachCenterText}>
-                  Add your document{"\n"}Here
-                </Text>
-            </View>
+        <View style={styles.attachPostBtn}>
+          <Text style={styles.attachPostText}>Post</Text>
+          <Ionicons name="chevron-forward" size={14} color="#fff" />
         </View>
+      </View>
+
+      {/* DIVIDER */}
+      <View style={styles.attachDivider} />
+
+      {/* CENTER CONTENT */}
+      <View style={styles.attachCenter}>
+        <View style={styles.attachPlusCircle}>
+          <Ionicons name="add" size={36} color="#555" />
+        </View>
+        <Text style={styles.attachCenterText}>
+          Add your document{"\n"}Here
+        </Text>
+      </View>
+    </View>
   </View>
 )}
 
-            {selectedComment && (
-              <View style={styles.commentActionRoot}>
+ {selectedComment && (
+  <View style={styles.commentActionRoot}>
 
-                {/* 🔹 BLUR */}
-                <BlurView
-                  intensity={40}
-                  tint="dark"
-                  style={StyleSheet.absoluteFill}
-                />
+    {/* 🔹 BLUR */}
+    <BlurView
+      intensity={40}
+      tint="dark"
+      style={StyleSheet.absoluteFill}
+    />
 
-                {/* 🔹 OUTSIDE TAP CLOSE */}
-                <TouchableOpacity
-                  style={StyleSheet.absoluteFill}
-                  activeOpacity={1}
-                  onPress={() => setSelectedComment(null)}
-                />
-                <ActionRow
-              icon="close-outline"
-              label="Close"
-              onPress={() => setSelectedComment(null)}
-            />
+    {/* 🔹 OUTSIDE TAP CLOSE */}
+    <TouchableOpacity
+      style={StyleSheet.absoluteFill}
+      activeOpacity={1}
+      onPress={() => setSelectedComment(null)}
+    />
+    <ActionRow
+  icon="close-outline"
+  label="Close"
+  onPress={() => setSelectedComment(null)}
+/>
 
 
-            {/* 🔹 CENTER POPUP */}
-            <View style={styles.commentActionOverlay}>
-              <View style={styles.commentActionCard}>
-                <TouchableOpacity
-          style={styles.popupCloseBtn}
-          onPress={() => setSelectedComment(null)}
-        >
-          <Ionicons name="close" size={20} color="#aaa" />
-        </TouchableOpacity>
+    {/* 🔹 CENTER POPUP */}
+    <View style={styles.commentActionOverlay}>
+      <View style={styles.commentActionCard}>
+        <TouchableOpacity
+  style={styles.popupCloseBtn}
+  onPress={() => setSelectedComment(null)}
+>
+  <Ionicons name="close" size={20} color="#aaa" />
+</TouchableOpacity>
 
         {/* HEADER */}
         <View style={styles.commentActionHeader}>
