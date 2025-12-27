@@ -128,7 +128,7 @@ const styles = StyleSheet.create({
 
   info: {
     color: "#9a9a9a",
-    fontSize: 12,
+    fontSize: 13,
     marginTop: 10,
     marginBottom: 18,
     lineHeight: 18,
@@ -136,7 +136,7 @@ const styles = StyleSheet.create({
 
   sectionTitle: {
     color: "#9a9a9a",
-    fontSize: 12,
+    fontSize: 13,
     marginBottom: 6,
   },
 
@@ -151,24 +151,24 @@ const styles = StyleSheet.create({
 
   deviceTitle: {
     color: "#fff",
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: "600",
   },
 
   active: {
     color: "#00E676",
-    fontSize: 11,
+    fontSize: 12,
   },
 
   text: {
     color: "#9a9a9a",
-    fontSize: 11,
+    fontSize: 12,
     marginTop: 4,
   },
 
   remove: {
     color: "#0095F6",
-    fontSize: 12,
+    fontSize: 13,
     marginTop: 8,
   },
 
@@ -192,7 +192,7 @@ const styles = StyleSheet.create({
   },
   cancelText: {
     color: "#fff",
-    fontSize: 13,
+    fontSize: 14,
   },
 
   saveBtn: {
@@ -207,7 +207,7 @@ const styles = StyleSheet.create({
   },
   saveText: {
     color: "#fff",
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: "600",
   },
 });
