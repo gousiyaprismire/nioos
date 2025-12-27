@@ -7,10 +7,28 @@
 
 
 
-import CommentsScreen from '../commentsscreens/comments'
+// import CommentsScreen from '../commentsscreens/comments'
+
+// export default function Index() {
+//   return <CommentsScreen />;
+// }
+
+
+
+
+// import NotificationScreen from '../notificationscreens/instanotifications';
+
+// export default function Index() {
+//   return <NotificationScreen />;
+// }
+
+
+
+
+import AccountsAndSecurity from '../accountsandsecurity/accountsandsecurity';
 
 export default function Index() {
-  return <CommentsScreen />;
+  return <AccountsAndSecurity />;
 }
 
 
@@ -21,9 +39,6 @@ export default function Index() {
 // export default function Index() {
 //   return <NotificationScreen />;
 // }
-
-
-
 
 
 // import SearchScreen from '../search-screens/SearchScreen';
