@@ -209,7 +209,7 @@ const styles = StyleSheet.create({
 
   sectionTitle: {
     color: "#9a9a9a",
-    fontSize: 12,
+    fontSize: 13,
     marginTop: 18,
     marginBottom: 6,
   },
@@ -225,29 +225,29 @@ const styles = StyleSheet.create({
 
   deviceTitle: {
     color: "#fff",
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: "600",
   },
   active: {
     color: "#00E676",
-    fontSize: 11,
+    fontSize: 12,
   },
 
   text: {
     color: "#9a9a9a",
-    fontSize: 11,
+    fontSize: 12,
     marginTop: 4,
   },
 
   remove: {
     color: "#0095F6",
-    fontSize: 12,
+    fontSize: 13,
     marginTop: 8,
   },
 
   empty: {
     color: "#555",
-    fontSize: 11,
+    fontSize: 12,
     marginBottom: 10,
   },
 
@@ -271,7 +271,7 @@ const styles = StyleSheet.create({
   },
   cancelText: {
     color: "#fff",
-    fontSize: 13,
+    fontSize: 14,
   },
 
   saveBtn: {
@@ -286,7 +286,7 @@ const styles = StyleSheet.create({
   },
   saveText: {
     color: "#fff",
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: "600",
   },
 
@@ -308,14 +308,14 @@ const styles = StyleSheet.create({
 
   popupTitle: {
     color: "#fff",
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: "600",
     marginBottom: 10,
   },
 
   popupText: {
     color: "#9a9a9a",
-    fontSize: 12,
+    fontSize: 13,
     lineHeight: 18,
     marginBottom: 18,
   },
@@ -328,12 +328,12 @@ const styles = StyleSheet.create({
 
   popupCancelText: {
     color: "#9a9a9a",
-    fontSize: 13,
+    fontSize: 14,
   },
 
   popupRemoveText: {
     color: "#fff",
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: "600",
   },
 });

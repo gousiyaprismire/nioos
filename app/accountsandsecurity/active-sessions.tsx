@@ -195,7 +195,7 @@ const styles = StyleSheet.create({
 
   sectionTitle: {
     color: "#9a9a9a",
-    fontSize: 13,
+    fontSize: 14,
     marginTop: 18,
     marginBottom: 6,
   },
@@ -204,12 +204,12 @@ const styles = StyleSheet.create({
 
   row: { flexDirection: "row", justifyContent: "space-between" },
 
-  deviceTitle: { color: "#fff", fontSize: 14, fontWeight: "600" },
-  active: { color: "#00E676", fontSize: 12 },
+  deviceTitle: { color: "#fff", fontSize: 15, fontWeight: "600" },
+  active: { color: "#00E676", fontSize: 13 },
 
-  text: { color: "#9a9a9a", fontSize: 12, marginTop: 4 },
+  text: { color: "#9a9a9a", fontSize: 13, marginTop: 4 },
 
-  remove: { color: "#0095F6", fontSize: 13, marginTop: 8 },
+  remove: { color: "#0095F6", fontSize: 14, marginTop: 8 },
 
   switchRow: {
     flexDirection: "row",
@@ -218,7 +218,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
 
-  switchText: { color: "#fff", fontSize: 14 },
+  switchText: { color: "#fff", fontSize: 15 },
 
   footer: {
     position: "absolute",
@@ -268,11 +268,11 @@ const styles = StyleSheet.create({
     borderColor: "#2a2a2a",
   },
 
-  popupTitle: { color: "#fff", fontSize: 16, fontWeight: "600" },
+  popupTitle: { color: "#fff", fontSize: 17, fontWeight: "600" },
 
   popupText: {
     color: "#9a9a9a",
-    fontSize: 13,
+    fontSize: 14,
     marginVertical: 14,
     lineHeight: 18,
   },
@@ -283,6 +283,6 @@ const styles = StyleSheet.create({
     gap: 18,
   },
 
-  popupCancel: { color: "#9a9a9a", fontSize: 14 },
-  popupRemove: { color: "#fff", fontSize: 13, fontWeight: "600" },
+  popupCancel: { color: "#9a9a9a", fontSize: 15 },
+  popupRemove: { color: "#fff", fontSize: 14, fontWeight: "600" },
 });
