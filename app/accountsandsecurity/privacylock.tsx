@@ -14,6 +14,12 @@ export default function PrivacyLock() {
   const [appLock, setAppLock] = useState(true);
   const [timeout, setTimeoutValue] = useState("5min");
 
+const handleSave = () => {
+  // redirect to Accounts & Security page
+  router.replace("/accountsandsecurity/accountsandsecurity");
+};
+
+
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.container}>
@@ -82,9 +88,10 @@ export default function PrivacyLock() {
             <Text style={styles.cancelText}>Cancel</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.saveBtn}>
+          <TouchableOpacity style={styles.saveBtn} onPress={handleSave}>
             <Text style={styles.saveText}>Save</Text>
           </TouchableOpacity>
+
         </View>
       </View>
     </SafeAreaView>
@@ -137,7 +144,7 @@ const styles = StyleSheet.create({
 
   pageTitle: {
     color: "#fff",
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: "600",
     marginVertical: 12,
   },
@@ -153,12 +160,12 @@ const styles = StyleSheet.create({
   },
   blockTitle: {
     color: "#fff",
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: "600",
   },
   blockDesc: {
     color: "#9a9a9a",
-    fontSize: 11,
+    fontSize: 12,
     marginTop: 6,
     maxWidth: "90%",
   },
@@ -190,7 +197,7 @@ const styles = StyleSheet.create({
   },
   radioText: {
     color: "#fff",
-    fontSize: 13,
+    fontSize: 14,
   },
 
   /* Footer */
@@ -214,7 +221,7 @@ const styles = StyleSheet.create({
   },
   cancelText: {
     color: "#fff",
-    fontSize: 13,
+    fontSize: 14,
   },
   saveBtn: {
     flex: 1,
@@ -228,7 +235,7 @@ const styles = StyleSheet.create({
   },
   saveText: {
     color: "#fff",
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: "600",
   },
 });

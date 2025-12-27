@@ -103,7 +103,7 @@ export default function SecurityCenter() {
         </ScrollView>
 
         {/* ---------- FOOTER ---------- */}
-        <View style={styles.footer}>
+        {/* <View style={styles.footer}>
           <TouchableOpacity style={styles.cancelBtn}>
             <Text style={styles.cancelText}>Cancel</Text>
           </TouchableOpacity>
@@ -111,7 +111,7 @@ export default function SecurityCenter() {
           <TouchableOpacity style={styles.saveBtn}>
             <Text style={styles.saveText}>Save</Text>
           </TouchableOpacity>
-        </View>
+        </View> */}
       </View>
     </SafeAreaView>
   );
