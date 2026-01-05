@@ -165,20 +165,21 @@ const styles = StyleSheet.create({
 
   sectionTitle: {
     color: "#fff",
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: "600",
-    marginBottom: 12,
+    marginBottom: 10,
+    marginTop: 40,
   },
 
   subTitle: {
     color: "#ccc",
     marginTop: 18,
-    fontSize: 14,
+    fontSize: 16,
   },
 
   desc: {
     color: "#666",
-    fontSize: 12,
+    fontSize: 14,
     marginBottom: 8,
   },
 

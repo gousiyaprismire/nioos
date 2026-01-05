@@ -184,15 +184,15 @@ const styles = StyleSheet.create({
 
   sectionTitle: {
     color: "#fff",
-    fontSize: 16,
-    fontWeight: "600",
-    marginTop: 18,
-    marginBottom: 6,
+    fontSize: 18,
+    fontWeight: "500",
+    marginTop: 20,
+    marginBottom: 10,
   },
 
   desc: {
     color: "#666",
-    fontSize: 12,
+    fontSize: 13,
     marginBottom: 10,
   },
 
@@ -222,7 +222,7 @@ const styles = StyleSheet.create({
 
   radioText: {
     color: "#ccc",
-    fontSize: 13,
+    fontSize: 14,
   },
 
   toggleRow: {
@@ -234,7 +234,7 @@ const styles = StyleSheet.create({
 
   toggleTitle: {
     color: "#ccc",
-    fontSize: 14,
+    fontSize: 15,
   },
 
   toggleDesc: {
@@ -245,7 +245,7 @@ const styles = StyleSheet.create({
 
   pendingText: {
     color: "#666",
-    fontSize: 12,
+    fontSize: 13,
     marginTop: 16,
   },
 

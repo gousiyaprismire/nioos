@@ -6,11 +6,13 @@ import { IconSymbol } from "@/components/ui/icon-symbol";
 import { useFonts, Roboto_400Regular, Roboto_500Medium, Roboto_700Bold } from "@expo-google-fonts/roboto";
 import { Colors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import { Stack } from "expo-router";
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
 
   return (
+    
     <Tabs
       screenOptions={{
         headerShown: false, // ✅ IMPORTANT: removes path/title

@@ -25,11 +25,11 @@
 
 
 
-import AccountsAndSecurity from '../accountsandsecurity/accountsandsecurity';
+// import AccountsAndSecurity from '../accountsandsecurity/accountsandsecurity';
 
-export default function Index() {
-  return <AccountsAndSecurity />;
-}
+// export default function Index() {
+//   return <AccountsAndSecurity />;
+// }
 
 
 
@@ -64,3 +64,12 @@ export default function Index() {
 // export default function Index() {
 //   return <InterestScreen />;
 // }
+
+
+
+
+import VideoCallScreen from '../videocallscreens/video-call-screen'
+
+export default function Index() {
+  return <VideoCallScreen />;
+}
