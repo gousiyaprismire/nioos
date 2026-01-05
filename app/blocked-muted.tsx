@@ -97,7 +97,8 @@ const styles = StyleSheet.create({
   headerTitle: {
     color: "#fff",
     fontSize: 18,
-    fontWeight: "600",
+    fontWeight: "500",
+    marginTop: 20,
   },
 
   card: {
@@ -109,9 +110,10 @@ const styles = StyleSheet.create({
 
   sectionTitle: {
     color: "#fff",
-    fontSize: 16,
-    fontWeight: "600",
+    fontSize: 18,
+    fontWeight: "500",
     marginBottom: 14,
+    marginTop: 15,
   },
 
   row: {
@@ -122,18 +124,18 @@ const styles = StyleSheet.create({
 
   rowTitle: {
     color: "#ccc",
-    fontSize: 14,
+    fontSize: 16,
     marginBottom: 4,
   },
 
   rowDesc: {
     color: "#666",
-    fontSize: 12,
+    fontSize: 14,
   },
 
   rowAction: {
     color: "#aaa",
-    fontSize: 12,
+    fontSize: 14,
     marginTop: 6,
   },
 

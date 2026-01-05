@@ -165,14 +165,15 @@ const styles = StyleSheet.create({
 
   sectionTitle: {
     color: "#fff",
-    fontSize: 16,
-    fontWeight: "600",
+    fontSize: 18,
+    fontWeight: "500",
     marginBottom: 10,
+    marginTop: 20,
   },
 
   subTitle: {
     color: "#aaa",
-    fontSize: 13,
+    fontSize: 14,
     marginBottom: 10,
   },
 
@@ -206,7 +207,7 @@ const styles = StyleSheet.create({
 
   radioText: {
     color: "#ccc",
-    fontSize: 14,
+    fontSize: 15,
   },
 
   toggleRow: {
@@ -218,7 +219,7 @@ const styles = StyleSheet.create({
 
   toggleText: {
     color: "#ccc",
-    fontSize: 14,
+    fontSize: 15,
     width: "75%",
   },
 
